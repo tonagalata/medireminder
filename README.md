@@ -1,50 +1,76 @@
-# Welcome to your Expo app 👋
+# MediReminder
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A web application to help users manage their medications and receive timely reminders.
 
-## Get started
+## Features
 
-1. Install dependencies
+- Add and manage medications with dosage and schedule
+- Set multiple daily reminders for each medication
+- Track medication history
+- Customizable alarm sounds
+- Desktop notifications
+- Refill tracking and reminders
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+- Frontend: React + Vite + TypeScript + TailwindCSS
+- Backend: Node.js + Express
+- Storage: In-memory (can be extended to use a database)
 
-   ```bash
-    npx expo start
-   ```
+## Prerequisites
 
-In the output, you'll find options to open the app in a
+- Node.js (v14 or higher)
+- npm (v6 or higher)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Setup
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+1. Clone the repository:
 ```bash
-npm run reset-project
+git clone https://github.com/yourusername/medication-reminder.git
+cd medication-reminder
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Install dependencies:
+```bash
+npm install
+```
 
-## Learn more
+3. Start the development server:
+```bash
+npm run dev
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+4. In a separate terminal, start the backend server:
+```bash
+node server.js
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+The application will be available at `http://localhost:5173`
 
-## Join the community
+## Project Structure
 
-Join our community of developers creating universal apps.
+```
+medication-reminder/
+├── src/
+│   ├── components/     # React components
+│   ├── context/       # React context for state management
+│   ├── services/      # Services for alarms and notifications
+│   ├── types/         # TypeScript type definitions
+│   ├── App.tsx        # Main application component
+│   └── main.tsx       # Application entry point
+├── server.js          # Express backend server
+├── package.json       # Project dependencies
+└── README.md         # Project documentation
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
