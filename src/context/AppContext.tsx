@@ -11,6 +11,7 @@ interface AppContextType {
   snoozeMedication: (id: string, minutes: number) => Promise<void>;
   skipMedication: (id: string) => Promise<void>;
   updateSettings: (settings: Partial<Settings>) => void;
+  deleteHistoryEntry: (medicationId: string, entryId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -254,6 +255,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
+  const deleteHistoryEntry = async (medicationId: string, entryId: string) => {
+    try {
+      // Remove from backend (if supported)
+      await fetch(`${API_URL}/medications/${medicationId}/history/${entryId}`, { method: 'DELETE' });
+      // Remove from local state
+      setMedications(prev => prev.map(m =>
+        m.id === medicationId
+          ? { ...m, history: (m.history || []).filter(entry => entry.id !== entryId) }
+          : m
+      ));
+    } catch (error) {
+      console.error('Error deleting history entry:', error);
+      throw error;
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       medications,
@@ -265,6 +282,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       snoozeMedication,
       skipMedication,
       updateSettings,
+      deleteHistoryEntry,
     }}>
       {children}
     </AppContext.Provider>

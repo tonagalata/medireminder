@@ -1,6 +1,6 @@
 import { Medication } from '../types';
 import { useApp } from '../context/AppContext';
-import { Edit as EditIcon, Delete as DeleteIcon, History as HistoryIcon, Settings as SettingsIcon } from '@mui/icons-material';
+import { Edit as EditIcon, Delete as DeleteIcon, History as HistoryIcon, Settings as SettingsIcon, VolumeUp as VolumeUpIcon } from '@mui/icons-material';
 import {
   Card,
   CardContent,
@@ -25,6 +25,7 @@ import {
   MenuItem,
   Switch,
   FormControlLabel,
+  Tooltip,
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
@@ -35,7 +36,7 @@ interface MedicationCardProps {
 }
 
 export function MedicationCard({ medication, onEdit }: MedicationCardProps) {
-  const { markAsTaken, deleteMedication, updateMedication, settings } = useApp();
+  const { markAsTaken, deleteMedication, updateMedication, settings, deleteHistoryEntry } = useApp();
   const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [nextReminder, setNextReminder] = useState<{ time: string; isToday: boolean; minutesUntil: number }>({
@@ -123,28 +124,46 @@ export function MedicationCard({ medication, onEdit }: MedicationCardProps) {
         flexDirection: 'column',
         bgcolor: 'background.paper',
         color: 'text.primary',
+        borderRadius: 3,
+        boxShadow: 2,
         '&:hover': {
           boxShadow: 6,
         },
       }}
     >
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Typography variant="h5" component="h2" gutterBottom>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', p: 1 }}>
+        <Typography variant="h6" component="h2" sx={{ fontWeight: 600, pl: 1, pt: 1 }}>
           {medication.name}
         </Typography>
-        <Typography variant="body1" color="text.secondary" gutterBottom>
-          {medication.dosage}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Times: {medication.times.join(', ')}
-        </Typography>
-        {medication.refills !== undefined && (
-          <Typography variant="body2" color="text.secondary">
-            Refills remaining: {medication.refills}
+        <Tooltip title="Delete Medication">
+          <IconButton aria-label="delete" color="error" size="small" onClick={() => deleteMedication(medication.id)}>
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
+      <Divider />
+      <CardContent sx={{ flexGrow: 1, pt: 2 }}>
+        <Stack spacing={1}>
+          <Typography variant="body1" color="text.secondary">
+            {medication.dosage}
           </Typography>
-        )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+              Times:
+            </Typography>
+            {medication.times.map((time, idx) => (
+              <Chip key={idx} label={time} size="small" color="primary" variant="outlined" />
+            ))}
+          </Box>
+          {medication.refills !== undefined && (
+            <Typography variant="body2" color="text.secondary">
+              Refills remaining: {medication.refills}
+            </Typography>
+          )}
+        </Stack>
       </CardContent>
-      <CardActions>
+      <Divider />
+      <CardActions sx={{ justifyContent: 'space-between', px: 2 }}>
         <Button
           size="small"
           color="primary"
@@ -171,13 +190,33 @@ export function MedicationCard({ medication, onEdit }: MedicationCardProps) {
         <DialogTitle>Medication History</DialogTitle>
         <DialogContent>
           <List>
-            {medication.history?.map((entry) => (
-              <ListItem key={entry.id}>
-                <ListItemText
-                  primary={entry.status}
-                  secondary={new Date(entry.takenAt).toLocaleString()}
-                />
-              </ListItem>
+            {medication.history?.map((entry, idx) => (
+              <>
+                <ListItem key={entry.id} alignItems="flex-start" secondaryAction={
+                  <Tooltip title="Delete Entry">
+                    <IconButton edge="end" aria-label="delete-history" onClick={() => deleteHistoryEntry(medication.id, entry.id)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                }>
+                  <ListItemText
+                    primary={<>
+                      <Chip
+                        label={entry.status}
+                        size="small"
+                        color={
+                          entry.status === 'taken' ? 'success' :
+                          entry.status === 'skipped' ? 'error' :
+                          entry.status === 'snoozed' ? 'warning' : 'default'
+                        }
+                        sx={{ mr: 1, textTransform: 'capitalize' }}
+                      />
+                      {format(new Date(entry.takenAt), 'PPpp')}
+                    </>}
+                  />
+                </ListItem>
+                {idx < (medication.history?.length || 0) - 1 && <Divider component="li" />}
+              </>
             ))}
           </List>
         </DialogContent>

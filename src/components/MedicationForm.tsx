@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogContent,
 } from '@mui/material';
-import { Add as AddIcon, Remove as RemoveIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Add as AddIcon, Remove as RemoveIcon, Close as CloseIcon, VolumeUp as VolumeUpIcon } from '@mui/icons-material';
 
 interface MedicationFormProps {
   medication?: Medication;
@@ -31,6 +31,7 @@ export function MedicationForm({ medication, onClose }: MedicationFormProps) {
     frequency: 1,
     times: ['09:00'],
     refills: '',
+    alarmSound: settings.alarmSound || 'default',
   });
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export function MedicationForm({ medication, onClose }: MedicationFormProps) {
         frequency: medication.frequency,
         times: medication.times,
         refills: medication.refills?.toString() || '',
+        alarmSound: medication.settings?.alarmSound || settings.alarmSound || 'default',
       });
     }
   }, [medication]);
@@ -50,6 +52,10 @@ export function MedicationForm({ medication, onClose }: MedicationFormProps) {
     const medicationData = {
       ...formData,
       refills: formData.refills ? parseInt(formData.refills) : undefined,
+      settings: {
+        alarmSound: formData.alarmSound,
+        notificationEnabled: medication?.settings?.notificationEnabled ?? settings.notificationEnabled,
+      },
     };
 
     try {
@@ -174,6 +180,22 @@ export function MedicationForm({ medication, onClose }: MedicationFormProps) {
               fullWidth
               inputProps={{ min: 0 }}
             />
+
+            <FormControl fullWidth>
+              <InputLabel id="alarm-sound-label">Alarm Sound</InputLabel>
+              <Select
+                labelId="alarm-sound-label"
+                value={formData.alarmSound}
+                label="Alarm Sound"
+                onChange={e => setFormData(prev => ({ ...prev, alarmSound: e.target.value as string }))}
+                startAdornment={<VolumeUpIcon fontSize="small" sx={{ mr: 1 }} />}
+              >
+                <MenuItem value="default">Default</MenuItem>
+                <MenuItem value="bell">Bell</MenuItem>
+                <MenuItem value="digital">Digital</MenuItem>
+                <MenuItem value="gentle">Gentle</MenuItem>
+              </Select>
+            </FormControl>
 
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
               <Button onClick={onClose} variant="outlined">

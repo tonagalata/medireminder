@@ -1,6 +1,8 @@
 # MediReminder
 
-A web application to help users manage their medications and receive timely reminders.
+**MediReminder** is your all-in-one digital companion for managing medications and building healthy habits. Designed for individuals, caregivers, and families, MediReminder ensures you never miss a dose, tracks your medication history, and provides peace of mind with customizable alarms and notifications. 
+
+Whether you're juggling multiple prescriptions, caring for a loved one, or simply want to stay on top of your health, MediReminder makes medication management effortless and reliable. Enjoy a beautiful, intuitive interface, detailed history tracking, refill reminders, and flexible scheduling—all in one place.
 
 ## Features
 
@@ -26,7 +28,7 @@ A web application to help users manage their medications and receive timely remi
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/medication-reminder.git
+git clone https://github.com/tonagalata/medication-reminder.git
 cd medication-reminder
 ```
 
