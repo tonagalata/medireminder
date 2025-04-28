@@ -6,6 +6,11 @@ export interface Medication {
   times: string[];
   refills?: number;
   createdAt: string;
+  settings: {
+    alarmSound: string;
+    notificationEnabled: boolean;
+  };
+  history: MedicationHistory[];
 }
 
 export interface MedicationHistory {
@@ -13,8 +18,11 @@ export interface MedicationHistory {
   medicationId: string;
   medicationName: string;
   takenAt: string;
+  status: 'taken' | 'skipped' | 'snoozed';
+  snoozeDuration?: number; // in minutes, if status is 'snoozed'
 }
 
 export interface Settings {
   alarmSound: string;
+  notificationEnabled: boolean;
 } 

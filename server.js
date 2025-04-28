@@ -41,33 +41,65 @@ app.put('/api/medications/:id', (req, res) => {
 // Delete a medication
 app.delete('/api/medications/:id', (req, res) => {
   const { id } = req.params;
-  medications = medications.filter(m => m.id !== id);
+  const index = medications.findIndex(m => m.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Medication not found' });
+  }
+  medications.splice(index, 1);
   res.status(204).send();
 });
 
 // Mark medication as taken
 app.post('/api/medications/:id/taken', (req, res) => {
   const { id } = req.params;
+  const { historyEntry } = req.body;
   const medication = medications.find(m => m.id === id);
   if (!medication) {
     return res.status(404).json({ error: 'Medication not found' });
   }
 
-  const historyEntry = {
-    id: Date.now().toString(),
-    medicationId: id,
-    medicationName: medication.name,
-    takenAt: new Date().toISOString(),
-  };
-
-  medicationHistory.push(historyEntry);
+  // Add history entry
+  medication.history = medication.history || [];
+  medication.history.push(historyEntry);
 
   // Update refills if applicable
   if (medication.refills !== undefined) {
     medication.refills = Math.max(0, medication.refills - 1);
   }
 
-  res.json({ medication, historyEntry });
+  res.json(medication);
+});
+
+// Snooze medication
+app.post('/api/medications/:id/snooze', (req, res) => {
+  const { id } = req.params;
+  const { historyEntry } = req.body;
+  const medication = medications.find(m => m.id === id);
+  if (!medication) {
+    return res.status(404).json({ error: 'Medication not found' });
+  }
+
+  // Add history entry
+  medication.history = medication.history || [];
+  medication.history.push(historyEntry);
+
+  res.json(medication);
+});
+
+// Skip medication
+app.post('/api/medications/:id/skip', (req, res) => {
+  const { id } = req.params;
+  const { historyEntry } = req.body;
+  const medication = medications.find(m => m.id === id);
+  if (!medication) {
+    return res.status(404).json({ error: 'Medication not found' });
+  }
+
+  // Add history entry
+  medication.history = medication.history || [];
+  medication.history.push(historyEntry);
+
+  res.json(medication);
 });
 
 // Get medication history
