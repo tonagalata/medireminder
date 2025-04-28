@@ -110,21 +110,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const now = new Date();
       const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
       
-      // Check if medication was already taken for this time slot today
-      const today = now.toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-      const alreadyTakenToday = medication.history?.some(entry => {
-        const entryDate = new Date(entry.takenAt);
-        const entryTime = `${entryDate.getHours().toString().padStart(2, '0')}:${entryDate.getMinutes().toString().padStart(2, '0')}`;
-        const entryDay = entryDate.toISOString().split('T')[0];
+      // Find the closest reminder time
+      const closestTime = medication.times.reduce((closest, time) => {
+        const [reminderHour, reminderMinute] = time.split(':').map(Number);
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
         
-        // Check if it was taken today and at the same time slot
-        return entryDay === today && 
-               entry.status === 'taken' && 
-               medication.times.includes(entryTime);
+        const timeDiff = Math.abs(
+          (currentHour * 60 + currentMinute) - (reminderHour * 60 + reminderMinute)
+        );
+        
+        if (!closest || timeDiff < closest.diff) {
+          return { time, diff: timeDiff };
+        }
+        return closest;
+      }, { time: '', diff: Infinity });
+
+      // Check if we're within 30 minutes of the closest reminder time
+      if (closestTime.diff > 30) {
+        throw new Error('No active reminder for this medication at the current time');
+      }
+
+      // Check if medication was already taken for this specific time slot today
+      const today = now.toISOString().split('T')[0];
+      const alreadyTakenForTimeSlot = medication.history?.some(entry => {
+        const entryDate = new Date(entry.takenAt);
+        const entryDay = entryDate.toISOString().split('T')[0];
+        const entryTime = `${entryDate.getHours().toString().padStart(2, '0')}:${entryDate.getMinutes().toString().padStart(2, '0')}`;
+        
+        // Check if it was taken today and for this specific time slot
+        return entryDay === today && entryTime === closestTime.time && entry.status === 'taken';
       });
 
-      if (alreadyTakenToday) {
-        throw new Error('Medication has already been taken for this time slot today');
+      if (alreadyTakenForTimeSlot) {
+        throw new Error(`Medication has already been taken for the ${closestTime.time} time slot today`);
       }
 
       const historyEntry: MedicationHistory = {

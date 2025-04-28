@@ -11,6 +11,7 @@ import {
   IconButton,
   Stack,
   keyframes,
+  Alert,
 } from '@mui/material';
 import { VolumeUp, VolumeOff } from '@mui/icons-material';
 
@@ -43,26 +44,25 @@ export function AlarmAlert({
 }: AlarmAlertProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const startTimeRef = useRef<number>(Date.now());
 
   useEffect(() => {
-    // Initialize audio
-    audioRef.current = new Audio(`/sounds/${alarmSound}.mp3`);
-    audioRef.current.loop = true;
+    let audio: HTMLAudioElement | null = null;
     
-    // Play audio with error handling
-    const playAudio = async () => {
+    const initializeAudio = async () => {
       try {
-        if (audioRef.current) {
-          await audioRef.current.play();
-        }
+        audio = new Audio(`/sounds/${alarmSound}.mp3`);
+        audio.loop = true;
+        await audio.play();
+        audioRef.current = audio;
       } catch (error) {
         console.error('Error playing alarm sound:', error);
       }
     };
     
-    playAudio();
+    initializeAudio();
 
     // Update elapsed time every second
     const interval = setInterval(() => {
@@ -71,9 +71,10 @@ export function AlarmAlert({
 
     return () => {
       clearInterval(interval);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+        audio = null;
       }
     };
   }, [alarmSound]);
@@ -85,22 +86,44 @@ export function AlarmAlert({
     }
   };
 
-  const handleMarkAsTaken = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+  const handleMarkAsTaken = async () => {
+    try {
+      setError(null);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
+      await onMarkAsTaken(medication.id);
+      onClose();
+    } catch (error) {
+      console.error('Error marking medication as taken:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An error occurred while marking the medication as taken');
+      }
     }
-    onMarkAsTaken(medication.id);
-    onClose();
   };
 
-  const handleSnooze = (minutes: number) => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+  const handleSnooze = async (minutes: number) => {
+    try {
+      setError(null);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
+      await onSnooze(medication.id, minutes);
+      onClose();
+    } catch (error) {
+      console.error('Error snoozing medication:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An error occurred while snoozing the medication');
+      }
     }
-    onSnooze(medication.id, minutes);
-    onClose();
   };
 
   const formatTime = (seconds: number): string => {
@@ -134,6 +157,11 @@ export function AlarmAlert({
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 2 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
           <Typography variant="h4" align="center">
             {medication.name}
           </Typography>
