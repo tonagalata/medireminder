@@ -35,7 +35,7 @@ interface MedicationCardProps {
 }
 
 export function MedicationCard({ medication, onEdit }: MedicationCardProps) {
-  const { markAsTaken, deleteMedication, updateMedication } = useApp();
+  const { markAsTaken, deleteMedication, updateMedication, settings } = useApp();
   const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [nextReminder, setNextReminder] = useState<{ time: string; isToday: boolean; minutesUntil: number }>({
@@ -116,137 +116,75 @@ export function MedicationCard({ medication, onEdit }: MedicationCardProps) {
   };
 
   return (
-    <>
-      <Card>
-        <CardContent>
-          <Stack spacing={2}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <Typography variant="h6">{medication.name}</Typography>
-              <Box>
-                <IconButton onClick={() => setShowSettings(true)} size="small">
-                  <SettingsIcon />
-                </IconButton>
-                <IconButton onClick={() => setShowHistory(true)} size="small">
-                  <HistoryIcon />
-                </IconButton>
-                <IconButton onClick={onEdit} size="small">
-                  <EditIcon />
-                </IconButton>
-                <IconButton onClick={() => deleteMedication(medication.id)} size="small" color="error">
-                  <DeleteIcon />
-                </IconButton>
-              </Box>
-            </Box>
-            
-            <Typography color="text.secondary">{medication.dosage}</Typography>
-            
-            <Box>
-              <Typography variant="subtitle2" gutterBottom>Schedule</Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {medication.times.map((time, index) => (
-                  <Chip key={index} label={time} size="small" />
-                ))}
-              </Stack>
-            </Box>
-
-            {nextReminder.time && (
-              <Box>
-                <Typography variant="subtitle2" gutterBottom>Next Reminder</Typography>
-                <Typography>
-                  {nextReminder.time} {nextReminder.isToday ? 'today' : 'tomorrow'}
-                  {nextReminder.minutesUntil > 0 && ` (in ${nextReminder.minutesUntil} minutes)`}
-                </Typography>
-              </Box>
-            )}
-          </Stack>
-        </CardContent>
-        <CardActions>
-          <Button 
-            fullWidth 
-            variant="contained" 
-            onClick={() => markAsTaken(medication.id)}
-          >
-            Mark as Taken
-          </Button>
-        </CardActions>
-      </Card>
+    <Card
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: 'background.paper',
+        color: 'text.primary',
+        '&:hover': {
+          boxShadow: 6,
+        },
+      }}
+    >
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Typography variant="h5" component="h2" gutterBottom>
+          {medication.name}
+        </Typography>
+        <Typography variant="body1" color="text.secondary" gutterBottom>
+          {medication.dosage}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Times: {medication.times.join(', ')}
+        </Typography>
+        {medication.refills !== undefined && (
+          <Typography variant="body2" color="text.secondary">
+            Refills remaining: {medication.refills}
+          </Typography>
+        )}
+      </CardContent>
+      <CardActions>
+        <Button
+          size="small"
+          color="primary"
+          onClick={() => onEdit()}
+        >
+          Edit
+        </Button>
+        <Button
+          size="small"
+          color="primary"
+          onClick={() => setShowHistory(true)}
+        >
+          History
+        </Button>
+      </CardActions>
 
       {/* History Dialog */}
-      <Dialog open={showHistory} onClose={() => setShowHistory(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={showHistory}
+        onClose={() => setShowHistory(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Medication History</DialogTitle>
         <DialogContent>
           <List>
-            {medication.history?.length > 0 ? (
-              medication.history.map((entry, index) => (
-                <ListItem key={entry.id} divider={index < medication.history.length - 1}>
-                  <ListItemText
-                    primary={format(new Date(entry.takenAt), 'PPpp')}
-                    secondary={
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Chip 
-                          label={entry.status} 
-                          size="small" 
-                          color={
-                            entry.status === 'taken' ? 'success' : 
-                            entry.status === 'snoozed' ? 'warning' : 'error'
-                          }
-                        />
-                        {entry.snoozeDuration && (
-                          <Typography variant="caption" color="text.secondary">
-                            Snoozed for {entry.snoozeDuration} minutes
-                          </Typography>
-                        )}
-                      </Stack>
-                    }
-                  />
-                </ListItem>
-              ))
-            ) : (
-              <ListItem>
-                <ListItemText primary="No history available" />
+            {medication.history?.map((entry) => (
+              <ListItem key={entry.id}>
+                <ListItemText
+                  primary={entry.status}
+                  secondary={new Date(entry.takenAt).toLocaleString()}
+                />
               </ListItem>
-            )}
+            ))}
           </List>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowHistory(false)}>Close</Button>
         </DialogActions>
       </Dialog>
-
-      {/* Settings Dialog */}
-      <Dialog open={showSettings} onClose={() => setShowSettings(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Medication Settings</DialogTitle>
-        <DialogContent>
-          <Stack spacing={3} sx={{ mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>Alarm Sound</InputLabel>
-              <Select
-                value={medication.settings?.alarmSound || 'default'}
-                label="Alarm Sound"
-                onChange={(e) => handleSoundChange(e.target.value)}
-              >
-                <MenuItem value="default">Default</MenuItem>
-                <MenuItem value="bell">Bell</MenuItem>
-                <MenuItem value="digital">Digital</MenuItem>
-                <MenuItem value="gentle">Gentle</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={medication.settings?.notificationEnabled ?? true}
-                  onChange={(e) => handleNotificationToggle(e.target.checked)}
-                />
-              }
-              label="Enable Notifications"
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowSettings(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
-    </>
+    </Card>
   );
 } 

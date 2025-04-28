@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Medication } from '../types';
+import { useApp } from '../context/AppContext';
 import {
   Dialog,
   DialogTitle,
@@ -42,6 +43,7 @@ export function AlarmAlert({
   onClose,
   alarmSound,
 }: AlarmAlertProps) {
+  const { settings } = useApp();
   const [isMuted, setIsMuted] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -140,8 +142,8 @@ export function AlarmAlert({
       PaperProps={{
         sx: {
           animation: `${pulse} 2s infinite`,
-          bgcolor: 'error.light',
-          color: 'error.contrastText',
+          bgcolor: settings.theme.alarm,
+          color: settings.theme.text,
         },
       }}
     >

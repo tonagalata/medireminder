@@ -23,7 +23,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem('settings');
     return saved ? JSON.parse(saved) : { 
       alarmSound: 'default',
-      notificationEnabled: true
+      notificationEnabled: true,
+      theme: {
+        primary: '#1976d2',
+        secondary: '#dc004e',
+        background: '#ffffff',
+        text: '#000000',
+        alarm: '#f44336',
+      },
+      profile: {
+        picture: null,
+        name: '',
+      },
     };
   });
 

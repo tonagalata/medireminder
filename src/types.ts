@@ -25,4 +25,15 @@ export interface MedicationHistory {
 export interface Settings {
   alarmSound: string;
   notificationEnabled: boolean;
+  theme: {
+    primary: string;
+    secondary: string;
+    background: string;
+    text: string;
+    alarm: string;
+  };
+  profile: {
+    picture: string | null;
+    name: string;
+  };
 } 
